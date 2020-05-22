@@ -16,7 +16,7 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-**/
+ **/
 
 const Main = imports.ui.main;
 const Gettext = imports.gettext.domain('gnome-shell-extensions-mediaplayer');
@@ -33,6 +33,7 @@ let _stockMpris;
 let _stockMprisOldShouldShow;
 
 function init() {
+  log("THIS IS FRESH")
   Lib.initTranslations(Me);
   Lib.addIcon(Me);
   Settings.init();
@@ -55,7 +56,7 @@ function _reset() {
 
 function enable() {
   let position = Settings.gsettings.get_enum(Settings.MEDIAPLAYER_INDICATOR_POSITION_KEY),
-      menu, desiredMenuPosition;
+    menu, desiredMenuPosition;
 
   if (position == Settings.IndicatorPosition.VOLUMEMENU) {
     indicator = new Panel.AggregateMenuIndicator();

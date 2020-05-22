@@ -16,13 +16,12 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-**/
+ **/
 
 'use strict';
 
 const Gio = imports.gi.Gio;
 const Gtk = imports.gi.Gtk;
-const Lang = imports.lang;
 const St = imports.gi.St;
 const Main = imports.ui.main;
 
@@ -34,80 +33,88 @@ const Widget = Me.imports.widget;
 const Settings = Me.imports.settings;
 const Util = Me.imports.util;
 
+const GObject = imports.gi.GObject
+const shellMinorVersion = parseInt(imports.misc.config.PACKAGE_VERSION.split('.')[1]);
 
 var PlayerUI = class PlayerUI extends Widget.PlayerMenu {
-
-  constructor(player) {
-    super('', true);
+  _init(player) {
+    super._init('', true);
     this.hidePlayStatusIcon();
     this.player = player;
     this.setCoverIconAsync = Util.setCoverIconAsync;
-    this._updateId = player.connect('player-update', Lang.bind(this, this.update));
+    this._updateId = player.connect('player-update', this.update.bind(this));
 
     this.oldShouldShow = null;
 
     this.playlistTitle = new Widget.PlaylistTitle();
-    this.playlistTitle.connect('activate', Lang.bind(this.player, this.player.raise));
+
     this.addMenuItem(this.playlistTitle);
     this.playlistTitle.hide();
 
-    this.trackCover = new Widget.TrackCover(new St.Icon({icon_name: 'audio-x-generic-symbolic', style_class: 'large-cover-icon'}));
-    this.trackCover.connect('activate', Lang.bind(this.player, this.player.raise));
+    this.trackCover = new Widget.TrackCover(new St.Icon({ icon_name: 'audio-x-generic-symbolic', style_class: 'large-cover-icon' }));
+
     this.addMenuItem(this.trackCover);
     this.trackCover.hide();
 
     this.trackRatings = new Widget.TrackRating(this.player);
-    this.trackRatings.connect('activate', Lang.bind(this.player, this.player.raise));
+
     this.addMenuItem(this.trackRatings);
     this.trackRatings.hide();
 
     this.info = new Widget.Info();
-    this.info.connect('activate', Lang.bind(this.player, this.player.raise));
+
     this.addMenuItem(this.info);
 
     this.trackControls = new Widget.PlayerButtons();
-    this.trackControls.connect('activate', Lang.bind(this.player, this.player.raise));
+
 
     this.prevButton = new Widget.PlayerButton('media-skip-backward-symbolic',
-                                              Lang.bind(this.player, this.player.previous));
+      this.player.previous.bind(this.player));
     this.trackControls.addButton(this.prevButton);
 
     this.playButton = new Widget.PlayerButton('media-playback-start-symbolic',
-                                              Lang.bind(this.player, this.player.playPause));
+      this.player.playPause.bind(this.player));
     this.trackControls.addButton(this.playButton);
 
     this.stopButton = new Widget.PlayerButton('media-playback-stop-symbolic',
-                                              Lang.bind(this.player, this.player.stop));
+      this.player.stop.bind(this.player));
     this.trackControls.addButton(this.stopButton);
 
     this.nextButton = new Widget.PlayerButton('media-skip-forward-symbolic',
-                                              Lang.bind(this.player, this.player.next));
+      this.player.next.bind(this.player));
     this.trackControls.addButton(this.nextButton);
 
     this.addMenuItem(this.trackControls);
 
     this.shuffleLoopStatus = new Widget.ShuffleLoopStatus(this.player);
-    this.shuffleLoopStatus.connect('activate', Lang.bind(this.player, this.player.raise));
+
     this.addMenuItem(this.shuffleLoopStatus);
     this.shuffleLoopStatus.hide();
 
-    this.position = new Widget.SliderItem('document-open-recent-symbolic');
-    this.position.connect('activate', Lang.bind(this.player, this.player.raise));
-    this.position.sliderConnect('value-changed', Lang.bind(this, function(item) {
-      this.player.seek(item._value);
-    }));
-    this.addMenuItem(this.position);
-    this.position.hide();
+    this.seekSlider = new Widget.SliderItem('document-open-recent-symbolic');
 
-    this.volume = new Widget.SliderItem('audio-volume-high-symbolic');
-    this.volume.connect('activate', Lang.bind(this.player, this.player.raise));
-    this.volume.sliderConnect('value-changed', Lang.bind(this, function(item) {
-      if (this.player.volume != item._value) {
-        this.player.volume = item._value;
-      }
-    }));
-    this.addMenuItem(this.volume);
-    this.volume.hide();
+    // PortableToasterOven: mild hacky seeker logic. do not call player.seek unless you are dragging.
+    // this prevents the extension from constantly... seeking in a player, 
+    // which causes audible chirps per seek for some reason on my system.
+    // Honestly, I think it's weird to seek every second onto the same position anyway.
+    // (mild hack because: I simply gated player.seek behind an if(). It works, A little lazy to change
+    // architecture of player.js for same result)
+    this.seekSlider.sliderConnect('notify::value', (item) => {
+      if(this.seekSlider.isDragging)
+        this.player.seek(item._value)
+    });
+    // also, scrolling should bypass if(), since slider value change is immediate, not in flux
+    this.seekSlider.sliderConnect('scroll-event', (item) => {this.player.seek(item._value)});
+    this.addMenuItem(this.seekSlider);
+    this.seekSlider.hide();
+
+    this.volumeSlider = new Widget.SliderItem('audio-volume-high-symbolic');
+
+    this.volumeSlider.sliderConnect('notify::value', item => {
+      if (this.player.volume !== item._value) this.player.volume = item._value;
+    });
+    this.addMenuItem(this.volumeSlider);
+    this.volumeSlider.hide();
 
     this.tracklist = this._createTracklistWidget();
     this.addMenuItem(this.tracklist);
@@ -117,22 +124,17 @@ var PlayerUI = class PlayerUI extends Widget.PlayerMenu {
     this.addMenuItem(this.playlists);
     this.playlists.hide();
 
-    this.tracklist.menu.connect('open-state-changed', Lang.bind(this, function(menu, open) {
-      if (open) {
-        this.playlists.menu.close();
-      }
-    }));
-    this.playlists.menu.connect('open-state-changed', Lang.bind(this, function(menu, open) {
-      if (open) {
-        this.tracklist.menu.close();
-      }
-    }));
+    this.tracklist.menu.connect('open-state-changed', (menu, open) => {
+      if (open) this.playlists.menu.close();
+    });
+    this.playlists.menu.connect('open-state-changed', (menu, open) => {
+      if (open) this.tracklist.menu.close();
+    });
 
     if (Settings.MINOR_VERSION > 19) {
       this.stockMpris = Main.panel.statusArea.dateMenu._messageList._mediaSection;
-      //Monkey patch
+      // Monkey patch
       this.stockMprisOldShouldShow = this.stockMpris._shouldShow;
-
     }
   }
 
@@ -168,14 +170,14 @@ var PlayerUI = class PlayerUI extends Widget.PlayerMenu {
       if (this.state.isRhythmboxStream) {
         this.trackCover.hideAnimate();
         this.trackRatings.hideAnimate();
-        this.position.hideAnimate();
+        this.seekSlider.hideAnimate();
         this.shuffleLoopStatus.hideAnimate();
       }
       if (this.state.showLoopStatus
-          && !this.state.isRhythmboxStream
-          && this.state.status !== Settings.Status.STOP) {
+        && !this.state.isRhythmboxStream
+        && this.state.status !== Settings.Status.STOP) {
         this.shuffleLoopStatus.showAnimate();
-      }
+      }             
     }
 
     if (newState.showPlayStatusIcon !== null) {
@@ -184,27 +186,27 @@ var PlayerUI = class PlayerUI extends Widget.PlayerMenu {
       }
       else {
         this.hidePlayStatusIcon();
-      }
+      }              
     }
 
     if (newState.showRating !== null) {
       if (this.player.showRating
-          && this.state.showRating !== 'no rating'
-          && !this.state.isRhythmboxStream
-          && this.state.status !== Settings.Status.STOP) {
+        && this.state.showRating !== 'no rating'
+        && !this.state.isRhythmboxStream
+        && this.state.status !== Settings.Status.STOP) {
         this.trackRatings.showAnimate();
       }
       else {
         this.trackRatings.hideAnimate();
-      }
+      }              
     }
 
     if (newState.showVolume !== null) {
       if (this.state.showVolume) {
-        this.volume.showAnimate();
+        this.volumeSlider.showAnimate();
       }
       else {
-        this.volume.hideAnimate();
+        this.volumeSlider.hideAnimate();
       }
     }
 
@@ -228,8 +230,8 @@ var PlayerUI = class PlayerUI extends Widget.PlayerMenu {
         this.shuffleLoopStatus.hideAnimate();
       }
       if (this.state.showLoopStatus
-          && !this.state.isRhythmboxStream
-          && this.state.status !== Settings.Status.STOP) {
+        && !this.state.isRhythmboxStream
+        && this.state.status !== Settings.Status.STOP) {
         this.shuffleLoopStatus.showAnimate();
       }
     }
@@ -255,13 +257,13 @@ var PlayerUI = class PlayerUI extends Widget.PlayerMenu {
 
     if (newState.showPosition !== null) {
       if (this.state.showPosition
-          && this.state.trackLength !== 0
-          && this.state.status !== Settings.Status.STOP
-          && !this.state.isRhythmboxStream) {
-        this.position.showAnimate();
+        && this.state.trackLength !== 0
+        && this.state.status !== Settings.Status.STOP
+        && !this.state.isRhythmboxStream) {
+        this.seekSlider.showAnimate();
       }
       else {
-        this.position.hideAnimate();
+        this.seekSlider.hideAnimate();
       }
     }
 
@@ -305,8 +307,8 @@ var PlayerUI = class PlayerUI extends Widget.PlayerMenu {
       if (this.state.trackRating !== 'no rating') {
         this.trackRatings.rate(this.state.trackRating);
         if (this.state.showRating
-            && !this.state.isRhythmboxStream
-            && this.state.status !== Settings.Status.STOP) {
+          && !this.state.isRhythmboxStream
+          && this.state.status !== Settings.Status.STOP) {
           this.trackRatings.showAnimate();
         }
       }
@@ -334,14 +336,14 @@ var PlayerUI = class PlayerUI extends Widget.PlayerMenu {
           volumeIcon = 'audio-volume-low-symbolic';
         }
         else if (n >= 3) {
-          volumeIcon = 'audio-volume-high-symbolic';
+          volumeIcon = 'audio-volume-high-symbolic';          
         }
         else {
           volumeIcon = 'audio-volume-medium-symbolic';
         }
       }
-      this.volume.setIcon(volumeIcon);
-      this.volume.setValue(value);
+      this.volumeSlider.setIcon(volumeIcon);
+      this.volumeSlider.setValue(value);
     }
 
     if (newState.canGoNext !== null) {
@@ -352,9 +354,9 @@ var PlayerUI = class PlayerUI extends Widget.PlayerMenu {
         this.nextButton.disable();
       }
       if (!this.state.canGoNext
-          && !this.state.canGoPrevious
-          && !this.state.canPlay
-          && !this.state.canPause) {
+        && !this.state.canGoPrevious
+        && !this.state.canPlay
+        && !this.state.canPause) {
         this.stopButton.disable();
       }
       else {
@@ -370,9 +372,9 @@ var PlayerUI = class PlayerUI extends Widget.PlayerMenu {
         this.prevButton.disable();
       }
       if (!this.state.canGoNext
-          && !this.state.canGoPrevious
-          && !this.state.canPlay
-          && !this.state.canPause) {
+        && !this.state.canGoPrevious
+        && !this.state.canPlay
+        && !this.state.canPause) {
         this.stopButton.disable();
       }
       else {
@@ -381,22 +383,22 @@ var PlayerUI = class PlayerUI extends Widget.PlayerMenu {
     }
 
     if (newState.canSeek !== null) {
-      this.position.setReactive(this.state.canSeek);
+      this.seekSlider.setReactive(this.state.canSeek);
     }
 
     if (newState.canPlay !== null) {
       if (this.state.status !== Settings.Status.PLAY) {
         if (this.state.canPlay) {
-           this.playButton.enable();
+          this.playButton.enable();
         }
         else {
-           this.playButton.disable();
+          this.playButton.disable();
         }
       }
       if (!this.state.canGoNext
-          && !this.state.canGoPrevious
-          && !this.state.canPlay
-          && !this.state.canPause) {
+        && !this.state.canGoPrevious
+        && !this.state.canPlay
+        && !this.state.canPause) {
         this.stopButton.disable();
       }
       else {
@@ -413,16 +415,16 @@ var PlayerUI = class PlayerUI extends Widget.PlayerMenu {
           }
         }
         else if (!this.player.playerIsBroken) {
-           // If we're playing, we can't pause, and the player isn't broken
-           // we should show the stop button no matter what.
-           this.stopButton.show();
-           this.playButton.disable();
+          // If we're playing, we can't pause, and the player isn't broken
+          // we should show the stop button no matter what.
+          this.stopButton.show();
+          this.playButton.disable();
         }
       }
       if (!this.state.canGoNext
-          && !this.state.canGoPrevious
-          && !this.state.canPlay
-          && !this.state.canPause) {
+        && !this.state.canGoPrevious
+        && !this.state.canPlay
+        && !this.state.canPause) {
         this.stopButton.disable();
       }
       else {
@@ -432,13 +434,14 @@ var PlayerUI = class PlayerUI extends Widget.PlayerMenu {
 
     if (newState.trackTime !== null) {
       if (this.state.trackLength === 0) {
-        this.position.hideAnimate();
+        this.seekSlider.hideAnimate();
       }
       else if (this.state.status !== Settings.Status.STOP
-               && this.state.showPosition
-               && !this.state.isRhythmboxStream) {
-        this.position.setValue(this.state.trackTime / this.state.trackLength);
-        this.position.showAnimate();
+        && this.state.showPosition
+        && !this.state.isRhythmboxStream
+        && !this.seekSlider.isDragging) {
+        this.seekSlider.setValue(this.state.trackTime / this.state.trackLength);
+        this.seekSlider.showAnimate();
       }
     }
 
@@ -453,25 +456,25 @@ var PlayerUI = class PlayerUI extends Widget.PlayerMenu {
           }
         }
         else if (!this.player.playerIsBroken) {
-           // If we're playing, we can't pause, and the player isn't broken
-           // we should show the stop button no matter what.
-           this.stopButton.show();
-           this.playButton.disable();
+          // If we're playing, we can't pause, and the player isn't broken
+          // we should show the stop button no matter what.
+          this.stopButton.show();
+          this.playButton.disable();
         }
       }
       else {
         this.playButton.setIcon('media-playback-start-symbolic');
         if (this.state.canPlay) {
-           this.playButton.enable();
+          this.playButton.enable();
         }
         else {
-           this.playButton.disable();
-        }
-      }
+          this.playButton.disable();
+        }                 
+      }      
       if (this.state.status === Settings.Status.STOP) {
         this.setPlayStatusIcon('media-playback-stop-symbolic');
         this.stopButton.hide();
-        this.position.hideAnimate();
+        this.seekSlider.hideAnimate();
         this.shuffleLoopStatus.hideAnimate();
         this.trackRatings.hideAnimate();
         this.info.hideAnimate();
@@ -485,15 +488,15 @@ var PlayerUI = class PlayerUI extends Widget.PlayerMenu {
           this.trackCover.showAnimate();
         }
         if (this.state.showRating
-            && !this.state.isRhythmboxStream
-            && this.state.trackRating !== 'no rating') {
+          && !this.state.isRhythmboxStream
+          && this.state.trackRating !== 'no rating') {
           this.trackRatings.showAnimate();
         }
         this.info.showAnimate();
         if (this.state.showPosition
-            && this.state.trackLength !== 0
-            && !this.state.isRhythmboxStream) {
-          this.position.showAnimate();
+          && this.state.trackLength !== 0
+          && !this.state.isRhythmboxStream) {
+          this.seekSlider.showAnimate();
         }
       }
 
@@ -502,8 +505,8 @@ var PlayerUI = class PlayerUI extends Widget.PlayerMenu {
       }
 
       if (this.state.showLoopStatus
-          && !this.state.isRhythmboxStream
-          && this.state.status !== Settings.Status.STOP) {
+        && !this.state.isRhythmboxStream
+        && this.state.status !== Settings.Status.STOP) {
         this.shuffleLoopStatus.showAnimate();
       }
     }
@@ -511,7 +514,7 @@ var PlayerUI = class PlayerUI extends Widget.PlayerMenu {
     if (newState.showStopButton !== null) {
       if (this.state.showStopButton && this.state.status !== Settings.Status.STOP) {
         this.stopButton.show();
-      }
+      }       
       else if (this.state.status === Settings.Status.PLAY && this.state.canPause) {
         this.stopButton.hide();
       }
@@ -519,13 +522,13 @@ var PlayerUI = class PlayerUI extends Widget.PlayerMenu {
 
     if (newState.trackCoverUrl !== null) {
       if (!this.state.isRhythmboxStream
-          && this.state.status !== Settings.Status.STOP) {
+        && this.state.status !== Settings.Status.STOP) {
         this.trackCover.showAnimate();
       }
       this.setCoverIconAsync(this.trackCover.icon,
-                             this.state.trackCoverUrl,
-                             '', this.player.isClementine,
-                             this.trackCover.animating);
+        this.state.trackCoverUrl,
+        '', this.player.isClementine,
+        this.trackCover.animating);
     }
 
     if (newState.playlists !== null) {
@@ -592,8 +595,9 @@ var PlayerUI = class PlayerUI extends Widget.PlayerMenu {
   }
 
   toString() {
-      return '[object PlayerUI(%s)]'.format(this.player.busName);
+    return '[object PlayerUI(%s)]'.format(this.player.busName);
   }
+
 
   destroy() {
     if (this._updateId) {
@@ -601,4 +605,14 @@ var PlayerUI = class PlayerUI extends Widget.PlayerMenu {
     }
     super.destroy();
   }
-};
+
+}
+
+
+if (shellMinorVersion >= 34) {
+  PlayerUI = GObject.registerClass(
+    {GTypeName: 'PlayerUI'},
+    PlayerUI
+  );
+}
+
