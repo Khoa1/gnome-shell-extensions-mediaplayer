@@ -5,6 +5,8 @@ Currently fixing this extension until it works on my system, not for mass use ye
 
 This means I am not testing this extension against every player and every version of gnome-shell, hence "not maintaining".
 
+Do NOT use this (yet).
+
 * Only aggregate menu (System menu) indicator position works, Gnome-Shell 3.34.5. Not all options tested.
 
 ## Original Authors
