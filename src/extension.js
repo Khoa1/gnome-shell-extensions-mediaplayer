@@ -33,7 +33,6 @@ let _stockMpris;
 let _stockMprisOldShouldShow;
 
 function init() {
-  log("THIS IS FRESH")
   Lib.initTranslations(Me);
   Lib.addIcon(Me);
   Settings.init();
@@ -95,6 +94,7 @@ function disable() {
   else {
     indicator.indicators.destroy();
   }
+
   indicator = null;
   if (Settings.MINOR_VERSION > 19) {
     //Revert Monkey patch

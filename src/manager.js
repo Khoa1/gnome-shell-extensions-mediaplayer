@@ -191,12 +191,21 @@ var PlayerManager = class PlayerManager {
 
   _addPlayer(busName, owner) {
     // Give players 1 sec to populate their interfaces before actually adding them.
+    // 
+    // PortableToasterOven: removed this timed loop, I see no difference if commented out.
+    //
+    // solves https://github.com/webmastak/gnome-shell-extensions-mediaplayer/issues/440 
+    // due to race condition against _removePlayerFromMenu if remove is called before add finished in 1 sec
+    //
+    // May revert if I notice what waiting 1 sec does.
+/*
     if (this._addPlayerTimeOutIds[busName] && this._addPlayerTimeOutIds[busName] !== 0) {
       Mainloop.source_remove(this._addPlayerTimeOutIds[busName]);
       this._addPlayerTimeOutIds[busName] = 0;
     }
     this._addPlayerTimeOutIds[busName] = Mainloop.timeout_add_seconds(1, () => {
       this._addPlayerTimeOutIds[busName] = 0;       
+*/
       if (this._players[owner]) {
         let prevName = this._players[owner].player.busName;
         // HAVE:       ADDING:     ACTION:
@@ -227,12 +236,13 @@ var PlayerManager = class PlayerManager {
         this._addPlayerToMenu(owner);
       }
       return false;
-    });
+//    });
   }
 
   _onPlayerUpdate(player, newState) {
-    if (newState.status)
+    if (newState.status) {
       this._refreshActivePlayer(player);
+    }
   }
 
   _onActivePlayerUpdate(player, newState) {
@@ -274,41 +284,24 @@ var PlayerManager = class PlayerManager {
   }
 
   _removePlayerFromMenu(busName, owner) {
-    // PortableToasterOven: because _addPlayer waits for their interface to populate via mainloop, 
-    // this creates a race condition in _removePlayer when removing(busName) before add(busName) is finish
-    // Wait (arbitrary interval) for timeOutID to be zero (set from _addPlayer) before removing.
-    // This fixes duplicate menu items bug (like from vlc, where it adds AND removes in quick succession... dunno why)
-    // fixes(?) https://github.com/webmastak/gnome-shell-extensions-mediaplayer/issues/440
-    Mainloop.timeout_add_seconds(0.5, () => {
-      this.playerTimeOutBailCounter +=1;
-      if(this._addPlayerTimeOutIds[busName] == 0) {
-        if (this._players[owner]) {
-          for (let id in this._players[owner].signals)
-            this._players[owner].player.disconnect(this._players[owner].signals[id]);
-          for (let id in this._players[owner].signalsUI)
-            this._players[owner].ui.disconnect(this._players[owner].signalsUI[id]);
-          if (this._players[owner].ui)
-            this._players[owner].ui.destroy();
-          if (this._players[owner].player)
-            this._players[owner].player.destroy();
-          delete this._players[owner];
-        }
-        this._refreshActivePlayer(null);
-        if (this.nbPlayers() === 0) {
-          this.emit('disconnect-signals');
-        }
-        this.playerTimeOutBailCounter = 0
-        return false;
-      } else if (this.playerTimeOutBailCounter < 100000){
-        return true;
-      }
-      else {
-        // This branch should never be taken. If so, find out why _addPlayerTimeOutIds is not zero and_addPlayer failed to set
-        log("WARNING: _removePlayerFromMenu() loop FAILED to find added player in allotted time. Emergency bailed out from infinite loop. This SHOULD NOT be happening.");
-        this.playerTimeOutBailCounter = 0
-        return false;
-      }
-    })
+    this.playerTimeOutBailCounter +=1;
+    if (this._players[owner]) {
+      for (let id in this._players[owner].signals)
+        this._players[owner].player.disconnect(this._players[owner].signals[id]);
+      for (let id in this._players[owner].signalsUI)
+        this._players[owner].ui.disconnect(this._players[owner].signalsUI[id]);
+      if (this._players[owner].ui)
+        this._players[owner].ui.destroy();
+      if (this._players[owner].player)
+        this._players[owner].player.destroy();
+      delete this._players[owner];
+    }
+    this._refreshActivePlayer(null);
+    if (this.nbPlayers() === 0) {
+      this.emit('disconnect-signals');
+    }
+    this.playerTimeOutBailCounter = 0
+    return false;
   }
 
   _changePlayerOwner(busName, oldOwner, newOwner) {
@@ -344,15 +337,19 @@ var PlayerManager = class PlayerManager {
     this._settings.disconnect(this._settingChangeId);
     if (this._ownerChangedId)
       this._dbus.disconnectSignal(this._ownerChangedId);
-    for (let owner in this._players)
+    for (let owner in this._players) {
       this._removePlayerFromMenu(null, owner);
+    }
     // Cancel all pending timeouts. Wouldn't want to try to add a player if we're disabled.
+    // PortableToasterOven: removed timed loop, no need for this... for now. See _addPlayer()
+    /*
     for (let busName in this._addPlayerTimeOutIds) {
       if (this._addPlayerTimeOutIds[busName] !== 0) {
         Mainloop.source_remove(this._addPlayerTimeOutIds[busName]);
         this._addPlayerTimeOutIds[busName] = 0;
       }
     }
+    */
   }
 }
 Signals.addSignalMethods(PlayerManager.prototype);

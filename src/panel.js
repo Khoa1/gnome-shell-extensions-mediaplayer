@@ -115,7 +115,8 @@ const IndicatorMixin = {
 
   _updatePanel() {
     let state = this.state;
-    if (state.status && this._showPlayStateIcon) {
+
+    if (state.status && this._showPlayStateIcon ) {
       if (state.status == Settings.Status.PLAY) {
         this._secondaryIndicator.icon_name = "media-playback-start-symbolic";
       }
@@ -197,7 +198,7 @@ var PanelIndicator = class PanelIndicator extends PanelMenu.Button {
     this.indicators = new St.BoxLayout({vertical: false, style_class: 'system-status-icon'});
 
     this._primaryIndicator = new St.Icon({icon_name: 'audio-x-generic-symbolic',
-      style_class: 'system-status-icon no-padding'});
+                                         style_class: 'system-status-icon no-padding'});
     this._secondaryIndicator = new St.Icon({icon_name: 'media-playback-stop-symbolic',
       style_class: 'system-status-icon no-padding'});
     this._secondaryIndicator.hide();
