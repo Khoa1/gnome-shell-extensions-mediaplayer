@@ -7,7 +7,7 @@ This means I am not testing this extension against every player and every versio
 
 Do NOT use this (yet).
 
-* Only aggregate menu (System menu) indicator position works, Gnome-Shell 3.34.5. Not all options tested.
+* Should work in all indicator positions, Gnome-Shell 3.34.5. Not all options tested.
 
 ## Original Authors
 
