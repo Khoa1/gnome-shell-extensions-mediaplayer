@@ -15,7 +15,7 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
- **/
+**/
 
 'use strict';
 
@@ -51,59 +51,59 @@ var MEDIAPLAYER_PLAY_STATUS_ICON_KEY = 'playstatus';
 var MINOR_VERSION = parseInt(Config.PACKAGE_VERSION.split(".")[1]);
 
 var IndicatorPosition = {
-  LEFT: 3,
-  CENTER: 0,
-  RIGHT: 1,
-  VOLUMEMENU: 2
+    LEFT: 3,
+    CENTER: 0,
+    RIGHT: 1,
+    VOLUMEMENU: 2
 };
 
 var ButtonIconStyles = {
-  CIRCULAR: 0,
-  SMALL: 1,
-  MEDIUM: 2,
-  LARGE: 3
+    CIRCULAR: 0,
+    SMALL: 1,
+    MEDIUM: 2,
+    LARGE: 3
 };
 
 var Status = {
-  STOP: "Stopped",
-  PLAY: "Playing",
-  PAUSE: "Paused"
+    STOP: "Stopped",
+    PLAY: "Playing",
+    PAUSE: "Paused"
 };
 
 var ValidPlaybackStatuses = [
-  'Stopped',
-  'Playing',
-  'Paused'
+    'Stopped',
+    'Playing',
+    'Paused'
 ];
 
 var SUPPORTS_RATINGS_EXTENSION = [
-  "org.mpris.MediaPlayer2.Lollypop"
+    "org.mpris.MediaPlayer2.Lollypop"
 ];
 
 var WRONG_VOLUME_SCALING = [
-  "org.mpris.MediaPlayer2.quodlibet"
+    "org.mpris.MediaPlayer2.quodlibet"
 ];
 
 var ALTERNATIVE_PLAYLIST_TITLES = [
-  {"org.mpris.MediaPlayer2.pithos": _("Stations")}
+    {"org.mpris.MediaPlayer2.pithos": _("Stations")}
 ];
 
 var ALTERNATIVE_TRACKLIST_TITLES = [
-  {"org.mpris.MediaPlayer2.pithos": _("Current Playlist")}
+    {"org.mpris.MediaPlayer2.pithos": _("Current Playlist")}
 ];
 
 var BROKEN_PLAYERS = [
-  "org.mpris.MediaPlayer2.spotify"
+    "org.mpris.MediaPlayer2.spotify"
 ];
 
 var NO_LOOP_STATUS_SUPPORT = [
-  "org.mpris.MediaPlayer2.quodlibet",
-  "org.mpris.MediaPlayer2.pithos",
-  "org.mpris.MediaPlayer2.spotify"
+    "org.mpris.MediaPlayer2.quodlibet",
+    "org.mpris.MediaPlayer2.pithos",
+    "org.mpris.MediaPlayer2.spotify"
 ];
 
 var gsettings;
 
 function init() {
-  gsettings = Lib.getSettings(Me);
+    gsettings = Lib.getSettings(Me);
 }

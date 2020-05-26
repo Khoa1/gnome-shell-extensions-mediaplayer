@@ -103,7 +103,7 @@ var PlayerUI = class PlayerUI extends Widget.PlayerMenu {
       if(this.seekSlider.isDragging)
         this.player.seek(item._value)
     });
-    // also, scrolling should bypass if(), since slider value change is immediate, not in flux
+    // also, scrolling should directly seek since slider value change on scroll is immediate, not in flux like a mouse drag
     this.seekSlider.sliderConnect('scroll-event', (item) => {this.player.seek(item._value)});
     this.addMenuItem(this.seekSlider);
     this.seekSlider.hide();
@@ -602,6 +602,7 @@ var PlayerUI = class PlayerUI extends Widget.PlayerMenu {
   destroy() {
     if (this._updateId) {
       this.player.disconnect(this._updateId);
+      delete this._updateId;
     }
     super.destroy();
   }

@@ -148,7 +148,7 @@ var compileTemplate = function(template, playerState) {
 };
 
 var _extends = function(object1, object2) {
-  Object.getOwnPropertyNames(object2).forEach(function(name, index) {
+  Object.getOwnPropertyNames(object2).forEach( (name, index) => {
     let desc = Object.getOwnPropertyDescriptor(object2, name);
     if (! desc.writable)
       Object.defineProperty(object1.prototype, name, desc);
