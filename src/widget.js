@@ -473,7 +473,9 @@ var Info = class Info extends BaseContainer {
 
   update(state) {
     this._setInfoText(this._artistLabel, state.trackArtist);
-    this._setInfoText(this._titleLabel, state.trackTitle);
+    // PortableToasterOven: I prefer url if trackTitle doesn't exist, may add pref option to select once I figure out how.
+    let trackTitleOrUrl = state.trackTitle ? state.trackTitle : state.trackUrl.split('/').reverse()[0].replace(/%20/g," ");
+    this._setInfoText(this._titleLabel, trackTitleOrUrl);
     this._setInfoText(this._albumLabel, state.trackAlbum);
   }
 
