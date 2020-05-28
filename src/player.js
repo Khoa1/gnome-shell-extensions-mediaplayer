@@ -117,7 +117,6 @@ var MPRISPlayer = class MPRISPlayer {
     let baseName = busName.split('.')[3];
 
     this.state = new PlayerState();
-    this.isDragging = false; // used in _startTimer to prevent updates while dragging slider.
 
     this.owner = owner;
     this.busName = busName;
