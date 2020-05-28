@@ -143,6 +143,14 @@ var PlayerUI = class PlayerUI extends Widget.PlayerMenu {
   }
 
   update(player, newState) {
+    // TODO: figure out why starting vlc does NOT display info label, unless you press stop button then resume on vlc.
+    // This is world's ugliest hack to force update of info & show it for vlc. Until I figure ui out.
+    // Also: if smplayer plays another file, the label TOGGLES on and off. There's some serious logic problem here.
+    if (newState.trackTitle !== null) {
+      this.info.showAnimate();
+      this.info.update(newState);
+    }
+
     if (newState.desktopEntry !== null) {
       this.icon.icon_name = Util.getPlayerSymbolicIcon(this.state.desktopEntry);
     }
