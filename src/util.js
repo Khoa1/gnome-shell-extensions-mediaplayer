@@ -113,6 +113,7 @@ function parseMetadata(metadata, state) {
     metadata = {};
   }
   state.trackUrl = metadata["xesam:url"] ? metadata["xesam:url"].unpack() : "";
+  // TODO smplayer spits out "metadata['xesam:artist'].deep_unpack(...).join is not a function" here. Investigate why.
   state.trackArtist = metadata["xesam:artist"] ? metadata["xesam:artist"].deep_unpack().join('/') : "";
   state.trackArtist = metadata["rhythmbox:streamTitle"] ? metadata["rhythmbox:streamTitle"].unpack() : state.trackArtist;
   state.trackAlbum = metadata["xesam:album"] ? metadata["xesam:album"].unpack() : "";

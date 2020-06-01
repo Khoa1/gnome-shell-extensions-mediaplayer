@@ -204,6 +204,25 @@ var BaseContainer = class BaseContainer extends PopupMenu.PopupBaseMenuItem {
   }
 
   showAnimate() {
+    this.show();
+    // PortableToasterOven: tweener removed for now in BaseContainer and Info, and extracted out onComplete() functions
+    //
+    // This solves vlc not showing its info labels upon new vlc instance being opened. I guess no animation as tradeoff.
+    //
+    // Hiding/showing does not work using tweener... atleast for Info in ui.js. For some reason. I don't know yet.
+    //
+    // But in Info, tweener is found to... somehow reset the value of its labels as empty string. 
+    // I've traced as much as I can, and cannot find the source of the value change. This reset
+    // occurs in _hideAnimateInfoItem, when tweening's onComplete() is called. 
+    // Unexpected value reset Occurs BETWEEN the END of _titleLabel, and BEGINING of _albumLabel... 
+    // despite supposedly being back to back. Perhaps scope problem? Idk.
+    //
+    // Still debuging this. Bit of a nightmare.
+    // 
+    // Small new problem, stop button now doesn't hide player and pause doesn't change only on first press. 
+    // Its fine after pressing pause two or three times. 
+
+    /*
     if (!this.actor.get_stage() || !this._hidden || this.animating) {
       return;
     }
@@ -222,9 +241,12 @@ var BaseContainer = class BaseContainer extends PopupMenu.PopupBaseMenuItem {
       },
       onCompleteScope: this
     });
+    */
   }
 
   hideAnimate() {
+    this.hide();
+    /*
     if (!this.actor.get_stage() || this._hidden || this.animating) {
       return;
     }
@@ -239,6 +261,7 @@ var BaseContainer = class BaseContainer extends PopupMenu.PopupBaseMenuItem {
       },
       onCompleteScope: this
     });
+    */
   }
 }
 if (shellMinorVersion >= 34) {
@@ -516,6 +539,8 @@ var Info = class Info extends BaseContainer {
       let [minHeight, naturalHeight] = actor.get_preferred_height(-1);
       actor.set_height(0);
       actor.show();
+      this._showInfoItem(actor);
+      /*
       Tweener.addTween(actor, {
         height: naturalHeight,
         time: 0.25,
@@ -525,6 +550,7 @@ var Info = class Info extends BaseContainer {
         },
         onCompleteScope: this
       });
+      */
     }
   }
 
@@ -537,6 +563,9 @@ var Info = class Info extends BaseContainer {
       actor.text = text;
     }
     else {
+      this._hideInfoItem(actor);
+      actor.text = text;
+      /*
       Tweener.addTween(actor, {
         height: 0,
         time: 0.25,
@@ -547,6 +576,7 @@ var Info = class Info extends BaseContainer {
         },
         onCompleteScope: this
       });
+      */
     }
   }
 }
