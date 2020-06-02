@@ -37,8 +37,9 @@ const GObject = imports.gi.GObject
 const shellMinorVersion = parseInt(imports.misc.config.PACKAGE_VERSION.split('.')[1]);
 
 var PlayerUI = class PlayerUI extends Widget.PlayerMenu {
-  _init(player) {
-    super._init('', true);
+
+  _init2(player) {
+	log("\t\tin init")    
     this.hidePlayStatusIcon();
     this.player = player;
     this.setCoverIconAsync = Util.setCoverIconAsync;
@@ -137,6 +138,10 @@ var PlayerUI = class PlayerUI extends Widget.PlayerMenu {
       this.stockMprisOldShouldShow = this.stockMpris._shouldShow;
     }
   }
+  constructor(player){
+super('hmmm', true);
+this._init2(player) ;
+}
 
   get state() {
     return this.player.state;
@@ -609,11 +614,9 @@ var PlayerUI = class PlayerUI extends Widget.PlayerMenu {
 
 }
 
-
 if (shellMinorVersion >= 34) {
   PlayerUI = GObject.registerClass(
     {GTypeName: 'PlayerUI'},
     PlayerUI
   );
 }
-

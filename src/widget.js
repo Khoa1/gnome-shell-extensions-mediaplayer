@@ -128,14 +128,20 @@ if (shellMinorVersion >= 999) {
 Signals.addSignalMethods(SubMenu.prototype);
 
 var PlayerMenu = class PlayerMenu extends PopupMenu.PopupSubMenuMenuItem{
+
   _init(label, wantIcon) {
-    super._init(label, wantIcon)
-    this._playStatusIcon = new St.Icon({style_class: 'popup-menu-icon'});
+    ////super._init(label, wantIcon)
+log("playerMenu init")    
+this._playStatusIcon = new St.Icon({style_class: 'popup-menu-icon'});
     this.actor.insert_child_at_index(this._playStatusIcon, 3);
     this.menu = new SubMenu(this.actor, this._triangle, true);
     this.menu.connect('open-state-changed', this._subMenuOpenStateChanged.bind(this));
   }
-
+  constructor(label, wantIcon) {
+super(label, wantIcon);  
+this._init(label, wantIcon); 
+log("playerMenu ctor: " + label)
+}
   addMenuItem(item) {
     this.menu.addMenuItem(item);
   }
@@ -162,8 +168,13 @@ if (shellMinorVersion >= 34) {
 
 
 var BaseContainer = class BaseContainer extends PopupMenu.PopupBaseMenuItem {
-  _init(parms) {
-    super._init(parms);
+
+  constructor(parms) {
+    super(parms)
+    this._init2(parms)
+  }
+  _init2(parms) {
+    //super._init(parms);
     this._hidden = false;
     this._animating = false;
     //We don't want our BaseContainers to be highlighted when clicked,
@@ -270,8 +281,13 @@ if (shellMinorVersion >= 34) {
 
 
 var PlayerButtons = class PlayerButtons extends BaseContainer {
+
+  constructor() {
+    super({hover: false});
+    this._init()
+  }
   _init() {
-    super._init({hover: false});
+    //super._init({hover: false});
     this.box = new St.BoxLayout({style_class: 'no-padding-bottom player-buttons'});
     this.actor.add(this.box, {expand: true, x_fill: false, x_align: St.Align.MIDDLE});
   }
@@ -287,8 +303,13 @@ if (shellMinorVersion >= 34) {
 }
 
 var ShuffleLoopStatus = class ShuffleLoopStatus extends BaseContainer {
+
+  constructor(player) {
+    super({hover: false});
+    this._init(player)
+  }
   _init(player) {
-    super._init({hover: false});
+    //super._init({hover: false});
     this._player = player;
     this.box = new St.BoxLayout({style_class: 'no-padding-bottom no-padding-top'});
     this.actor.add(this.box, {expand: true, x_fill: false, x_align: St.Align.MIDDLE});
@@ -354,8 +375,12 @@ if (shellMinorVersion >= 34) {
 }
 
 var PlaylistTitle = class PlaylistTitle extends BaseContainer {
+  constructor() {
+    super({hover: false, style_class: 'no-padding-bottom'});
+    this._init()
+  }
   _init () {
-    super._init({hover: false, style_class: 'no-padding-bottom'});
+    //super._init({hover: false, style_class: 'no-padding-bottom'});
     this._label = new St.Label({style_class: 'track-info-artist'});
     this.actor.add(this._label, {expand: true, x_fill: false, x_align: St.Align.MIDDLE});
   }
@@ -428,28 +453,32 @@ var PlayerButton = class PlayerButton {
 }
 
 var SliderItem = class SliderItem extends BaseContainer {
+
+  constructor(icon) {
+    super({hover: false});
+    this._init(icon)
+  }
   _init(icon) {
-    super._init({hover: false});
+    //super._init({hover: false});
     this._icon = new St.Icon({style_class: 'popup-menu-icon', icon_name: icon});
     this._slider = new Slider.Slider(0);
     this.actor.add(this._icon);
-    this.actor.add(this._slider, {expand: true});
   }
 
   get isDragging() {
-    return this._slider._dragging;
+    return false;//this._slider._dragging;
   }
 
   setReactive(reactive) {
-    this._slider.reactive = reactive;
+    //this._slider.reactive = reactive;
   }
 
   setValue(value) {
-    this._slider.value = value;
+    //this._slider.value = value;
   }
 
   setIcon(icon) {
-    this._icon.icon_name = icon;
+    //this._icon.icon_name = icon;
   }
 
   sliderConnect(signal, callback) {
@@ -464,8 +493,15 @@ if (shellMinorVersion >= 34) {
 }
 
 var TrackCover = class TrackCover extends BaseContainer {
+
+  constructor(icon) {
+    log("track cover init!")
+log("SHELL VERSION: "+shellMinorVersion )
+    super({hover: false, style_class: 'no-padding-bottom'});
+    this._init(icon)
+  }
   _init(icon) {
-    super._init({hover: false, style_class: 'no-padding-bottom'});
+    //super._init({hover: false, style_class: 'no-padding-bottom'});
     this.icon = icon;
     this.actor.add(this.icon, {expand: true, x_fill: false, x_align: St.Align.MIDDLE});
   }
@@ -478,8 +514,13 @@ if (shellMinorVersion >= 34) {
 }
 
 var Info = class Info extends BaseContainer {
+
+  constructor() {
+    super({hover: false, style_class: 'no-padding-bottom'});
+    this._init()
+  }
   _init() {
-    super._init({hover: false, style_class: 'no-padding-bottom'});
+    //super._init({hover: false, style_class: 'no-padding-bottom'});
     this._animateChange = Util.animateChange;     
     this.infos = new St.BoxLayout({vertical: true});
     this._artistLabel = new St.Label({style_class: 'track-info-artist'});
@@ -586,8 +627,13 @@ if (shellMinorVersion >= 34) {
 
 
 var TrackRating = class TrackRating extends BaseContainer {
+
+  constructor(player, value) {
+    super({style_class: 'no-padding-bottom', hover: false});
+    this._init(player, value)
+  }
   _init(player, value) {
-    super._init({style_class: 'no-padding-bottom', hover: false});
+    //super._init({style_class: 'no-padding-bottom', hover: false});
 
     this._hidden = false;
     this._player = player;
@@ -797,8 +843,13 @@ if (shellMinorVersion >= 34) {
 
 
 var ListSubMenu = class ListSubMenu extends PopupMenu.PopupSubMenuMenuItem {
+
+  constructor(label) {
+    super(label)
+    this._init(label)
+  }
   _init(label) {
-    super._init(label, false);
+    //super._init(label, false);
     this.activeObject = null;
     this._hidden = false;
     this.menu = new SubMenu(this.actor, this._triangle, false);
@@ -826,7 +877,7 @@ var ListSubMenu = class ListSubMenu extends PopupMenu.PopupSubMenuMenuItem {
     this.actor.opacity = 255;
     this.actor.set_height(-1);
     this.hidden = false;
-  } 
+ } 
 
   showAnimate() {
     if (!this.actor.get_stage() || !this._hidden)
@@ -921,8 +972,13 @@ if (shellMinorVersion >= 34) {
 
 
 var TrackList = class TrackList extends ListSubMenu {
+
+  constructor(label, player) {
+    super(label, player)
+    this._init(label, player)
+  }
   _init(label, player) {
-    super._init(label);
+    //super._init(label);
     this.player = player;
     this.parseMetadata = Util.parseMetadata;
   }
@@ -978,8 +1034,13 @@ if (shellMinorVersion >= 34) {
 
 
 var Playlists = class Playlists extends ListSubMenu {
+
+  constructor(label, player) {
+    super(label, player)
+    this._init(label, player)
+  }
   _init(label, player) {
-    super._init(label);
+    //super._init(label);
     this.player = player;
   }
 
@@ -1025,8 +1086,12 @@ if (shellMinorVersion >= 34) {
 
 
 var PlaylistItem = class PlaylistItem extends PopupMenu.PopupBaseMenuItem {
+  constructor(text, obj) {
+    super()
+    this._init(text, obj)
+  }
   _init (text, obj) {
-    super._init();
+    ////super._init();
     this.obj = obj;
     this.label = new St.Label({text: text});
     this.actor.add(this.label);
@@ -1047,8 +1112,12 @@ if (shellMinorVersion >= 34) {
 
 
 var TracklistItem = class TracklistItem extends PopupMenu.PopupBaseMenuItem {
+  constructor(text, obj) {
+    super()
+    this._init(text, obj)
+  }
   _init (metadata, player) {
-    super._init();
+    ////super._init();
     this.actor.child_set_property(this._ornamentLabel, "y-fill", false);
     this.actor.child_set_property(this._ornamentLabel, "y-align", St.Align.MIDDLE);
     this._player = player;

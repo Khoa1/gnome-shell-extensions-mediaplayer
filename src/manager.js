@@ -220,7 +220,8 @@ var PlayerManager = class PlayerManager {
       }
       else if (owner) {
         let player = new Player.MPRISPlayer(busName, owner);
-        let ui = new UI.PlayerUI(player);
+	log("\t===making new player")        
+let ui = new UI.PlayerUI(player);
         this._players[owner] = {
           player: player,
           ui: ui,
