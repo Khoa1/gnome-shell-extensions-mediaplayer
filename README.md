@@ -1,13 +1,11 @@
 # gnome-shell-extensions-mediaplayer
 
-## Not Maintaining, Just Fixing
-Currently fixing this extension until it works on my system, not for mass use yet.
+## Not Maintaining, Just Fixing For My Use
+Currently fixing this extension until it works on my system, not for mass use.
 
-This means I am not testing this extension against every player and every version of gnome-shell, hence "not maintaining".
+I am not extensively testing this extension against every player and every version of gnome-shell, hence "not maintaining". (Also, I don't know exactly what I'm doing quite yet :P. This extension touches a lot of things I'm learning from, documented or not)
 
-Do NOT use this (yet).
-
-* Should work in all indicator positions, Gnome-Shell 3.34.5. Not all options tested.
+There are problems with this, but it currently works on my Gnome-Shell 3.34.5.
 
 ## Original Authors
 
@@ -17,3 +15,5 @@ Do NOT use this (yet).
 * iczero
 
 Based on the work of horazont (Jonas Wielicki).
+
+Archive: https://github.com/webmastak/gnome-shell-extensions-mediaplayer
