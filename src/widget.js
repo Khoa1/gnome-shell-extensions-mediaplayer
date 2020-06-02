@@ -218,9 +218,6 @@ var BaseContainer = class BaseContainer extends PopupMenu.PopupBaseMenuItem {
     // despite supposedly being back to back. Perhaps scope problem? Idk.
     //
     // Still debuging this. Bit of a nightmare.
-    // 
-    // Small new problem, stop button now doesn't hide player and pause doesn't change only on first press. 
-    // Its fine after pressing pause two or three times. 
 
     /*
     if (!this.actor.get_stage() || !this._hidden || this.animating) {
