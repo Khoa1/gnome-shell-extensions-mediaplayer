@@ -93,7 +93,7 @@ var PlayerUI = class PlayerUI extends Widget.PlayerMenu {
 
     this.seekSlider = new Widget.SliderItem('document-open-recent-symbolic');
 
-    // PortableToasterOven: mild hacky seeker logic. do not call player.seek unless you are dragging.
+    // khoa1: mild hacky seeker logic. do not call player.seek unless you are dragging.
     // this prevents the extension from constantly... seeking in a player, 
     // which causes audible chirps per seek for some reason on my system.
     // Honestly, I think it's weird to seek every second onto the same position anyway.

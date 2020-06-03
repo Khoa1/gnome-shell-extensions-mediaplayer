@@ -192,7 +192,7 @@ var PlayerManager = class PlayerManager {
   _addPlayer(busName, owner) {
     // Give players 1 sec to populate their interfaces before actually adding them.
     // 
-    // PortableToasterOven: removed this timed loop, I see no difference if commented out.
+    // khoa1: removed this timed loop, I see no difference if commented out.
     //
     // solves https://github.com/webmastak/gnome-shell-extensions-mediaplayer/issues/440 
     // due to race condition against _removePlayerFromMenu if remove is called before add finished in 1 sec
@@ -341,7 +341,7 @@ var PlayerManager = class PlayerManager {
       this._removePlayerFromMenu(null, owner);
     }
     // Cancel all pending timeouts. Wouldn't want to try to add a player if we're disabled.
-    // PortableToasterOven: removed timed loop, no need for this... for now. See _addPlayer()
+    // khoa1: removed timed loop, no need for this... for now. See _addPlayer()
     /*
     for (let busName in this._addPlayerTimeOutIds) {
       if (this._addPlayerTimeOutIds[busName] !== 0) {
