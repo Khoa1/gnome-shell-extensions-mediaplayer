@@ -38,8 +38,16 @@ const shellMinorVersion = parseInt(imports.misc.config.PACKAGE_VERSION.split('.'
 
 var PlayerUI = class PlayerUI extends Widget.PlayerMenu {
 
-  _init2(player) {
-	log("\t\tin init")    
+  constructor(player) {
+    if (shellMinorVersion >= 34) {
+      super(player);
+    } else {
+      super('', true);
+      this._init(player);
+    }
+  }
+  _init(player) {
+    super._init('', true);
     this.hidePlayStatusIcon();
     this.player = player;
     this.setCoverIconAsync = Util.setCoverIconAsync;
@@ -94,10 +102,9 @@ var PlayerUI = class PlayerUI extends Widget.PlayerMenu {
 
     this.seekSlider = new Widget.SliderItem('document-open-recent-symbolic');
 
-    // PortableToasterOven: mild hacky seeker logic. do not call player.seek unless you are dragging.
+    // khoa1: mild hacky seeker logic. do not call player.seek unless you are dragging.
     // this prevents the extension from constantly... seeking in a player, 
     // which causes audible chirps per seek for some reason on my system.
-    // Honestly, I think it's weird to seek every second onto the same position anyway.
     // (mild hack because: I simply gated player.seek behind an if(). It works, A little lazy to change
     // architecture of player.js for same result)
     this.seekSlider.sliderConnect('notify::value', (item) => {
@@ -138,10 +145,6 @@ var PlayerUI = class PlayerUI extends Widget.PlayerMenu {
       this.stockMprisOldShouldShow = this.stockMpris._shouldShow;
     }
   }
-  constructor(player){
-super('hmmm', true);
-this._init2(player) ;
-}
 
   get state() {
     return this.player.state;
@@ -614,9 +617,11 @@ this._init2(player) ;
 
 }
 
+
 if (shellMinorVersion >= 34) {
   PlayerUI = GObject.registerClass(
     {GTypeName: 'PlayerUI'},
     PlayerUI
   );
 }
+
