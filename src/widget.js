@@ -119,7 +119,7 @@ var SubMenu = class SubMenu extends PopupMenu.PopupMenuBase{
     return Clutter.EVENT_PROPAGATE;
   }
 }
-if (shellMinorVersion >= 999) { // not for 3.34.5 yet
+if (shellMinorVersion >= 999) { // not yet as of 3.34.5
   SubMenu = GObject.registerClass(
     {GTypeName: 'SubMenu'},
     SubMenu
@@ -128,19 +128,22 @@ if (shellMinorVersion >= 999) { // not for 3.34.5 yet
 Signals.addSignalMethods(SubMenu.prototype);
 
 var PlayerMenu = class PlayerMenu extends PopupMenu.PopupSubMenuMenuItem{
+  constructor(label, wantIcon) {
+    if (shellMinorVersion >= 34) {
+      super(label, wantIcon);
+    } else {
+      super(label, wantIcon)
+      this._init(label, wantIcon)
+    }
+  }
+
   _init(label, wantIcon) {
-    log("=== TESTING ===")
-    super._init(label, wantIcon)
+    if (shellMinorVersion >= 34)
+      super._init(label, wantIcon)
     this._playStatusIcon = new St.Icon({style_class: 'popup-menu-icon'});
     this.actor.insert_child_at_index(this._playStatusIcon, 3);
     this.menu = new SubMenu(this.actor, this._triangle, true);
     this.menu.connect('open-state-changed', this._subMenuOpenStateChanged.bind(this));
-  }
-  constructor(label, wantIcon) {
-    super(label, wantIcon);
-    if (shellMinorVersion < 34) {
-      this._init(label, wantIcon)
-    }
   }
 
   addMenuItem(item) {
@@ -178,7 +181,8 @@ var BaseContainer = class BaseContainer extends PopupMenu.PopupBaseMenuItem {
     }
   }
   _init(parms) {
-    super._init(parms);
+    if(shellMinorVersion >= 34)
+      super._init(parms);
     this._hidden = false;
     this._animating = false;
     //We don't want our BaseContainers to be highlighted when clicked,
@@ -294,7 +298,8 @@ var PlayerButtons = class PlayerButtons extends BaseContainer {
     }
   }
   _init() {
-    super._init({hover: false});
+    if(shellMinorVersion >= 34)
+      super._init({hover: false});
     this.box = new St.BoxLayout({style_class: 'no-padding-bottom player-buttons'});
     this.actor.add(this.box, {expand: true, x_fill: false, x_align: St.Align.MIDDLE});
   }
@@ -387,8 +392,17 @@ if (shellMinorVersion >= 34) {
 }
 
 var PlaylistTitle = class PlaylistTitle extends BaseContainer {
+  constructor() {
+    if (shellMinorVersion >= 34) {
+      super();
+    } else {
+      super({hover: false, style_class: 'no-padding-bottom'});
+      this._init();
+    }
+  }
   _init () {
-    super._init({hover: false, style_class: 'no-padding-bottom'});
+    if (shellMinorVersion >= 34)
+      super._init({hover: false, style_class: 'no-padding-bottom'});
     this._label = new St.Label({style_class: 'track-info-artist'});
     this.actor.add(this._label, {expand: true, x_fill: false, x_align: St.Align.MIDDLE});
   }
@@ -470,7 +484,8 @@ var SliderItem = class SliderItem extends BaseContainer {
     }
   }
   _init(icon) {
-    super._init({hover: false});
+    if(shellMinorVersion >= 34)
+      super._init({hover: false});
     this._icon = new St.Icon({style_class: 'popup-menu-icon', icon_name: icon});
     this._slider = new Slider.Slider(0);
     this.actor.add(this._icon);
@@ -514,7 +529,8 @@ var TrackCover = class TrackCover extends BaseContainer {
     }
   }
   _init(icon) {
-    super._init({hover: false, style_class: 'no-padding-bottom'});
+    if(shellMinorVersion >= 34)
+      super._init({hover: false, style_class: 'no-padding-bottom'});
     this.icon = icon;
     this.actor.add(this.icon, {expand: true, x_fill: false, x_align: St.Align.MIDDLE});
   }
@@ -536,7 +552,8 @@ var Info = class Info extends BaseContainer {
     }
   }
   _init() {
-    super._init({hover: false, style_class: 'no-padding-bottom'});
+    if(shellMinorVersion >= 34)
+      super._init({hover: false, style_class: 'no-padding-bottom'});
     this._animateChange = Util.animateChange;     
     this.infos = new St.BoxLayout({vertical: true});
     this._artistLabel = new St.Label({style_class: 'track-info-artist'});
@@ -652,7 +669,8 @@ var TrackRating = class TrackRating extends BaseContainer {
     }
   }
   _init(player, value) {
-    super._init({style_class: 'no-padding-bottom', hover: false});
+    if(shellMinorVersion >= 34)
+      super._init({style_class: 'no-padding-bottom', hover: false});
 
     this._hidden = false;
     this._player = player;
@@ -870,8 +888,10 @@ var ListSubMenu = class ListSubMenu extends PopupMenu.PopupSubMenuMenuItem {
       this._init(label);
     }
   }
+
   _init(label) {
-    super._init(label, false);
+    if(shellMinorVersion >= 34)
+      super._init(label, false);
     this.activeObject = null;
     this._hidden = false;
     this.menu = new SubMenu(this.actor, this._triangle, false);
@@ -1002,8 +1022,10 @@ var TrackList = class TrackList extends ListSubMenu {
       this._init(label, player);
     }
   }
+
   _init(label, player) {
-    super._init(label);
+    if(shellMinorVersion >= 34)
+      super._init(label);
     this.player = player;
     this.parseMetadata = Util.parseMetadata;
   }
@@ -1067,8 +1089,10 @@ var Playlists = class Playlists extends ListSubMenu {
       this._init(label, player);
     }
   }
+
   _init(label, player) {
-    super._init(label);
+    if(shellMinorVersion >= 34)
+      super._init(label);
     this.player = player;
   }
 
@@ -1114,8 +1138,18 @@ if (shellMinorVersion >= 34) {
 
 
 var PlaylistItem = class PlaylistItem extends PopupMenu.PopupBaseMenuItem {
+  constructor(text, obj) {
+    if (shellMinorVersion >= 34) {
+      super(text, obj);
+    } else {
+      super();
+      this._init(text, obj);
+    }
+  }
+
   _init (text, obj) {
-    super._init();
+    if (shellMinorVersion >= 34)
+      super._init();
     this.obj = obj;
     this.label = new St.Label({text: text});
     this.actor.add(this.label);
@@ -1136,8 +1170,17 @@ if (shellMinorVersion >= 34) {
 
 
 var TracklistItem = class TracklistItem extends PopupMenu.PopupBaseMenuItem {
+  constructor(metadata, player) {
+    if (shellMinorVersion >= 34) {
+      super(metadata, player);
+    } else {
+      super();
+      this._init(metadata, player);
+    }
+  }
   _init (metadata, player) {
-    super._init();
+    if (shellMinorVersion >= 34)
+      super._init();
     this.actor.child_set_property(this._ornamentLabel, "y-fill", false);
     this.actor.child_set_property(this._ornamentLabel, "y-align", St.Align.MIDDLE);
     this._player = player;
