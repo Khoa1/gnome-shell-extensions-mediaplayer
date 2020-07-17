@@ -79,7 +79,7 @@ function enable() {
     Main.panel.addToStatusArea('mediaplayer', indicator, 999, 'center');
   }
   else {
-    Main.panel.statusArea.aggregateMenu._indicators.insert_child_below(indicator.indicators, Main.panel.statusArea.aggregateMenu._screencast.indicators);
+    Main.panel.statusArea.aggregateMenu._indicators.insert_child_below(indicator, Main.panel.statusArea.aggregateMenu._screencast);
   }
 
   indicator.manager = manager;

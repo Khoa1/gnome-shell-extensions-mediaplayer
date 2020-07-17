@@ -111,7 +111,9 @@ var PlayerUI = class PlayerUI extends Widget.PlayerMenu {
     this.volumeSlider = new Widget.SliderItem('audio-volume-high-symbolic');
 
     this.volumeSlider.sliderConnect('notify::value', item => {
-      if (this.player.volume !== item._value) this.player.volume = item._value;
+      if (this.player.volume !== item._value)  {
+        this.player.volume = item._value;
+      }
     });
     this.addMenuItem(this.volumeSlider);
     this.volumeSlider.hide();

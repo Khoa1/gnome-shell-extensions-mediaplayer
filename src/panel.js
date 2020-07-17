@@ -179,6 +179,7 @@ const IndicatorMixin = {
 var PanelIndicator = class PanelIndicator extends PanelMenu.Button {
   _init() {
     super._init(0.0, "mediaplayer");
+    Object.assign(this, IndicatorMixin)
     this._manager = null;
     this.add_style_class_name('panel-status-button');
     this.menu.actor.add_style_class_name('aggregate-menu panel-media-indicator');
@@ -239,11 +240,12 @@ if (shellMinorVersion >= 32) {
     PanelIndicator
   );
 }
-Util._extends(PanelIndicator, IndicatorMixin);
+//Util._extends(PanelIndicator, IndicatorMixin);
 
 var AggregateMenuIndicator = class AggregateMenuIndicator extends PanelMenu.SystemIndicator{
   constructor(label, wantIcon) {
     super();
+    Object.assign(this, IndicatorMixin)
     this._manager = null;
     this.compileTemplate = Util.compileTemplate;
     this.setCoverIconAsync = Util.setCoverIconAsync;
@@ -306,4 +308,4 @@ if (shellMinorVersion >= 36) {
   );
 }
 
-Util._extends(AggregateMenuIndicator, IndicatorMixin);
+//Util._extends(AggregateMenuIndicator, IndicatorMixin);
